@@ -1,5 +1,6 @@
 package com.graph.ql.Controller;
 
+import com.graph.ql.Dto.StudentInput;
 import com.graph.ql.Dto.StudentRequest;
 import com.graph.ql.Entity.Student;
 import com.graph.ql.Service.StudentService;
@@ -7,10 +8,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
+import org.springframework.graphql.data.method.annotation.SubscriptionMapping;
+import org.springframework.stereotype.Controller;
+import reactor.core.publisher.Flux;
 
 import java.util.List;
 
-@org.springframework.stereotype.Controller
+@Controller
 public class StudentResolver {
 
     @Autowired
@@ -45,5 +49,23 @@ public class StudentResolver {
     @MutationMapping
     public Boolean deleteStudent(@Argument Integer id) {
         return studentService.deleteStudent(id);
+    }
+
+    @MutationMapping
+    public List<Student> createMultipleStudentsRecords(@Argument List<StudentInput> students) {
+
+        List<Student> studentsList = students.stream().map(request -> {
+            Student student = new Student();
+            student.setName(request.getName());
+            student.setEmail(request.getEmail());
+            return student;
+        }).toList();
+        return studentService.createMultipleStudentsRecords(studentsList);
+    }
+
+    // --- NEW SUBSCRIPTION ---
+    @SubscriptionMapping
+    public Flux<Student> studentCreated() {
+        return studentService.studentCreatedPublisher();
     }
 }

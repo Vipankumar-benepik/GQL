@@ -4,6 +4,11 @@ type Student {
     email: String!
 }
 
+input StudentInput {
+    name: String!
+    email: String!
+}
+
 type Query {
     getAllStudents: [Student]
     getStudentById(id: ID!): Student
@@ -13,4 +18,9 @@ type Mutation {
     createStudent(name: String!, email: String!): Student
     updateStudent(id: ID!, name: String!, email: String!): Student
     deleteStudent(id: ID!): Boolean
+    createMultipleStudentsRecords(students:[StudentInput!]!) : [Student!]
+}
+
+type Subscription {
+    studentCreated: Student
 }
