@@ -26,6 +26,16 @@ type Mutation {
     createStudentWithChecksum(checksum: ChecksumInputRequest!): Student
 }
 
-type Subscription {
-    studentCreated: Student
-}
+
+#
+#type File {
+#    filename: String
+#    mimetype: String
+#    encoding: String
+#}
+#
+#type Mutation {
+#    uploadFile(file: Upload!): File!
+#}
+#
+#scalar Upload
