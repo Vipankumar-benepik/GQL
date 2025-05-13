@@ -1,5 +1,7 @@
 package com.graph.ql.Controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.graph.ql.Dto.Checksum;
 import com.graph.ql.Dto.StudentInput;
 import com.graph.ql.Dto.StudentRequest;
 import com.graph.ql.Entity.Student;
@@ -10,15 +12,21 @@ import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.graphql.data.method.annotation.SubscriptionMapping;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestBody;
 import reactor.core.publisher.Flux;
 
 import java.util.List;
+
+import static com.graph.ql.utils.Decode.decryptText;
 
 @Controller
 public class StudentResolver {
 
     @Autowired
     private StudentService studentService;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @QueryMapping
     public List<Student> getAllStudents() {
@@ -28,6 +36,17 @@ public class StudentResolver {
     @QueryMapping
     public Student getStudentById(@Argument Integer id) {
         return studentService.getStudentById(id);
+    }
+
+    @MutationMapping
+    public Student createStudentWithChecksum(@Argument Checksum checksum) {
+        try {
+            String decryptedJson = decryptText(checksum.getChecksum());
+            StudentRequest studentRequest = objectMapper.readValue(decryptedJson, StudentRequest.class);
+            return studentService.saveStudent(studentRequest);
+        } catch (Exception e) {
+            throw new RuntimeException("Invalid or malformed request");
+        }
     }
 
     @MutationMapping
@@ -63,9 +82,4 @@ public class StudentResolver {
         return studentService.createMultipleStudentsRecords(studentsList);
     }
 
-    // --- NEW SUBSCRIPTION ---
-    @SubscriptionMapping
-    public Flux<Student> studentCreated() {
-        return studentService.studentCreatedPublisher();
-    }
 }
